@@ -29,7 +29,7 @@ def read_validation_csv(filename):
 
 
 def sigmoid_forward(a):
-    return 1.0 / (1 + np.exp(-a))
+    return 1.0 / (1.0 + np.exp(-a))
 
 
 def sigmoid_backward(b, gb):
@@ -76,7 +76,7 @@ def nnforward(x, y, al, be):
     z1 = np.insert(z, 0, 1.0)
     b = linear_forward(z1, be)
     ycap = softmax_forward(b)
-    print "ycap", ycap
+    #print "ycap", ycap
     j = crossentropy_forward(y, ycap)
     return [a, z1, b, ycap, j]
 
@@ -102,8 +102,8 @@ def sgd(num_epoch, hidden_units, init_mode, num_classes):
         alpha = np.random.uniform(-0.1, 0.1, size=(hidden_units, 128 + 1))
         beta = np.random.uniform(-0.1, 0.1, size=(num_classes, hidden_units + 1))
 
-    alpha[:, 0] = 1.0
-    beta[:, 0] = 1.0
+    alpha[:, 0] = 0.0
+    beta[:, 0] = 0.0
     for e in xrange(0, num_epoch):
         for i in xrange(0, len(labels)):
             x = np.asarray(pixels[i], dtype=float)
@@ -175,6 +175,20 @@ def write_metrics_out(filename):
     metrics_file.write("error(train): "+str(train_error)+"\n")
     metrics_file.write("error(validation): "+str(validation_error)+"\n")
     metrics_file.close()
+
+
+def finite_diff(x, y, theta):
+    epsilon = 1e-5
+    grad = np.zeros(shape=len(theta))
+    for m in xrange(0, len(theta)):
+        d = np.zeros(shape=len(theta))
+        d[m] = 1
+        v = crossentropy_forward(x, y, theta + epsilon*d)
+        v -= crossentropy_forward(x, y, theta - epsilon*d)
+        v /= 2*epsilon
+        grad[m] = v
+    return grad
+
 
 
 i_train_csv = sys.argv[1]
